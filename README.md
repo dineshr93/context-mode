@@ -1131,17 +1131,16 @@ Full configs: [`configs/omp/mcp.json`](configs/omp/mcp.json) | [`configs/omp/SYS
    npm install -g context-mode
    ```
 
-2. Add to your Hermes profile's `mcp_servers.json` (`~/.hermes/mcp_servers.json` or project-level):
+2. Add to your Hermes profile's `config.yaml` (`~/.hermes/config.yaml`):
 
-   ```json
-   {
-     "mcpServers": {
-       "context-mode": {
-         "command": "context-mode"
-       }
-     }
-   }
+   ```yaml
+   mcp_servers:
+     context-mode:
+       command: context-mode
+       enabled: true
    ```
+
+   Or via CLI: `hermes config set mcp_servers.context-mode.command context-mode && hermes config set mcp_servers.context-mode.enabled true`
 
 3. Restart Hermes Agent.
 
@@ -1149,7 +1148,7 @@ Full configs: [`configs/omp/mcp.json`](configs/omp/mcp.json) | [`configs/omp/SYS
 
 **Routing:** MCP-only — no hook support. The model can call all 11 `ctx_*` tools but is not programmatically blocked from using raw Bash/Read/WebFetch. Compliance depends on instruction following (~60%). For stronger enforcement, add routing instructions to your project's `AGENTS.md` or Hermes system prompt.
 
-Full config: [`configs/hermes/mcp.json`](configs/hermes/mcp.json)
+Full config: [`configs/hermes/config.yaml`](configs/hermes/config.yaml)
 
 </details>
 
@@ -1434,7 +1433,7 @@ Tool call output can be collapsed/expanded with the default Pi's default keybind
 >
 > **OMP (Oh My Pi)** runs context-mode as a plugin via `omp plugin install context-mode`. The plugin registers `tool_call`, `tool_result`, `session_start`, and `session_before_compact` events for hard-block routing and full session continuity. Storage isolated under `~/.omp/context-mode/` so OMP and Pi never share state. Auto-detected via `PI_CODING_AGENT_DIR` (default agent dir `~/.omp/agent`) or `~/.omp/` directory. See [issue #473](https://github.com/mksglu/context-mode/issues/473) for the storage-isolation history.
 >
-> **Hermes Agent** connects via MCP only — no native hook system. All 11 `ctx_*` tools are available; routing enforcement relies on the model's instruction following (~60% compliance without hooks). Configure via `mcp_servers.json` in your Hermes profile directory.
+> **Hermes Agent** connects via MCP only — no native hook system. All 11 `ctx_*` tools are available; routing enforcement relies on the model's instruction following (~60% compliance without hooks). Configure via `mcp_servers` in `~/.hermes/config.yaml` (or `hermes config set`).
 
 ### Routing Enforcement
 

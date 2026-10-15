@@ -841,14 +841,14 @@ The hook adapter exists only to satisfy the interface contract — every parser 
 - Can inject session context: --
 
 **Path Resolution:**
-- Settings file: `~/.hermes/mcp_servers.json` (profile-level) or project-level `mcp_servers.json`
-- MCP registration: `mcpServers` object inside `mcp_servers.json`
+- Settings file: `~/.hermes/config.yaml` (profile-level)
+- MCP registration: `mcp_servers` mapping inside `config.yaml`
 - Session dir: shared default (no per-platform session root; MCP-only platforms without an adapter use the default session directory)
 - Routing instructions: project `AGENTS.md` or the Hermes system prompt
 
 **Detection:**
 - Not auto-detected (no adapter); `CONTEXT_MODE_PLATFORM` has no `hermes` value
-- Manual configuration only — see `configs/hermes/mcp.json`
+- Manual configuration only — see `configs/hermes/config.yaml`
 
 **Notes / Caveats:**
 - No hook adapter implies no automatic routing — the model must follow the routing block voluntarily (~60% compliance)
