@@ -4,13 +4,13 @@ This document provides a comprehensive comparison of all platforms supported by 
 
 ## Overview
 
-context-mode supports 17 client platforms, plus the OpenClaw gateway integration, across three hook paradigms:
+context-mode supports 18 client platforms, plus the OpenClaw gateway integration, across three hook paradigms:
 
 | Paradigm | Platforms |
 |----------|-----------|
 | **JSON stdin/stdout** | Claude Code, Gemini CLI, VS Code Copilot, JetBrains Copilot, GitHub Copilot CLI, Cursor, Codex CLI, Qwen Code, Kimi Code, Antigravity CLI (`agy`), Kiro |
 | **TS Plugin** | OpenCode, KiloCode, OpenClaw |
-| **MCP-only** | Antigravity, Zed, Pi, OMP (Oh My Pi) |
+| **MCP-only** | Antigravity, Zed, Pi, OMP (Oh My Pi), Hermes Agent |
 
 The MCP server layer is 100% portable and needs no adapter. Only the hook layer requires platform-specific adapters.
 
@@ -819,6 +819,41 @@ The hook adapter exists only to satisfy the interface contract — every parser 
 - No marketplace or plugin registry for OMP; `getInstalledVersion()` reports `not installed` unless an `extensions/context-mode/package.json` exists under the agent dir
 - `validateHooks` always returns a single `warn` row reminding the user that OMP exposes only MCP integration
 - `configureAllHooks`, `setHookPermissions`, and `updatePluginRegistry` are intentional no-ops
+
+---
+
+### Hermes Agent
+
+**Status:** MCP-only (no hooks)
+
+**Hook Paradigm:** MCP-only
+
+[Hermes Agent](https://hermes-agent.nousresearch.com) connects to context-mode purely as an MCP server. There is no hook adapter and none is planned — Hermes exposes no PreToolUse/PostToolUse interception surface. All routing relies on instruction following.
+
+**Hook Support:**
+- PreToolUse: --
+- PostToolUse: --
+- PreCompact: --
+- SessionStart: --
+- Stop: --
+- Can modify args: --
+- Can modify output: --
+- Can inject session context: --
+
+**Path Resolution:**
+- Settings file: `~/.hermes/mcp_servers.json` (profile-level) or project-level `mcp_servers.json`
+- MCP registration: `mcpServers` object inside `mcp_servers.json`
+- Session dir: shared default (no per-platform session root; MCP-only platforms without an adapter use the default session directory)
+- Routing instructions: project `AGENTS.md` or the Hermes system prompt
+
+**Detection:**
+- Not auto-detected (no adapter); `CONTEXT_MODE_PLATFORM` has no `hermes` value
+- Manual configuration only — see `configs/hermes/mcp.json`
+
+**Notes / Caveats:**
+- No hook adapter implies no automatic routing — the model must follow the routing block voluntarily (~60% compliance)
+- Tool naming follows the generic MCP convention (`mcp__context-mode__ctx_*`)
+- `context-mode doctor` does not validate Hermes registration; verify by calling `ctx_stats` in a session
 
 ---
 
