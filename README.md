@@ -1119,6 +1119,41 @@ Full configs: [`configs/omp/mcp.json`](configs/omp/mcp.json) | [`configs/omp/SYS
 </details>
 
 <details>
+<summary><strong>Hermes Agent</strong> — MCP-only, no hooks</summary>
+
+**Prerequisites:** Node.js >= 22.5 (or Bun), Hermes Agent installed.
+
+**Install:**
+
+1. Install context-mode globally:
+
+   ```bash
+   npm install -g context-mode
+   ```
+
+2. Add to your Hermes profile's `mcp_servers.json` (`~/.hermes/mcp_servers.json` or project-level):
+
+   ```json
+   {
+     "mcpServers": {
+       "context-mode": {
+         "command": "context-mode"
+       }
+     }
+   }
+   ```
+
+3. Restart Hermes Agent.
+
+**Verify:** In a Hermes session, type `ctx stats`. Context-mode tools should appear and respond.
+
+**Routing:** MCP-only — no hook support. The model can call all 11 `ctx_*` tools but is not programmatically blocked from using raw Bash/Read/WebFetch. Compliance depends on instruction following (~60%). For stronger enforcement, add routing instructions to your project's `AGENTS.md` or Hermes system prompt.
+
+Full config: [`configs/hermes/mcp.json`](configs/hermes/mcp.json)
+
+</details>
+
+<details>
 <summary><strong>Build Prerequisites</strong> <sup>(CentOS, RHEL, Alpine)</sup></summary>
 
 Context Mode uses [better-sqlite3](https://github.com/WiseLibs/better-sqlite3) on Node.js, which ships prebuilt native binaries for most platforms. On glibc >= 2.31 systems (Ubuntu 20.04+, Debian 11+, Fedora 34+, macOS, Windows), `npm install` works without any build tools.
@@ -1370,18 +1405,18 @@ Tool call output can be collapsed/expanded with the default Pi's default keybind
 
 ## Platform Compatibility
 
-| Feature | Claude Code | Qwen Code | Gemini CLI | VS Code Copilot | JetBrains Copilot | GitHub Copilot CLI | Cursor | OpenCode | KiloCode | OpenClaw | Codex CLI | Kimi Code | Antigravity | Antigravity CLI (`agy`) | Kiro | Zed | Pi | OMP |
-|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| MCP Server / Native Tools | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Native plugin | Native plugin | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
-| PreToolUse Hook | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Plugin | Plugin | Plugin | Yes | Yes | -- | Bounded | Yes | -- | Yes (extension) | Plugin |
-| PostToolUse Hook | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Plugin | Plugin | Plugin | Yes | Yes | -- | Yes (capture-only) | Yes | -- | Yes (extension) | Plugin |
-| SessionStart Hook | Yes | Yes | Yes | Yes | Yes | Yes | -- | ✓ (via experimental.chat.system.transform) | ✓ (via experimental.chat.system.transform) | Plugin | Yes | Yes | -- | -- | -- | -- | Yes (extension) | Plugin |
-| PreCompact Hook | Yes | Yes | Yes | Yes | Yes | Yes | -- | Plugin | Plugin | Plugin | Yes | Yes | -- | -- | -- | -- | Yes (extension) | Plugin |
-| Can Modify Args | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Plugin | Plugin | Plugin | -- | Yes | -- | -- | -- | -- | Yes (extension) | -- |
-| Can Block Tools | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Plugin | Plugin | Plugin | Yes | Yes | -- | Bounded | Yes | -- | Yes (extension) | Plugin |
-| Utility Commands (ctx) | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes (/ctx-stats, /ctx-doctor) | Yes |
-| Slash Commands | Yes | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
-| Plugin Marketplace | Yes | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
+| Feature | Claude Code | Qwen Code | Gemini CLI | VS Code Copilot | JetBrains Copilot | GitHub Copilot CLI | Cursor | OpenCode | KiloCode | OpenClaw | Codex CLI | Kimi Code | Antigravity | Antigravity CLI (`agy`) | Kiro | Zed | Pi | OMP | Hermes Agent |
+|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| MCP Server / Native Tools | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Native plugin | Native plugin | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes |
+| PreToolUse Hook | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Plugin | Plugin | Plugin | Yes | Yes | -- | Bounded | Yes | -- | Yes (extension) | Plugin | -- |
+| PostToolUse Hook | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Plugin | Plugin | Plugin | Yes | Yes | -- | Yes (capture-only) | Yes | -- | Yes (extension) | Plugin | -- |
+| SessionStart Hook | Yes | Yes | Yes | Yes | Yes | Yes | -- | ✓ (via experimental.chat.system.transform) | ✓ (via experimental.chat.system.transform) | Plugin | Yes | Yes | -- | -- | -- | -- | Yes (extension) | Plugin | -- |
+| PreCompact Hook | Yes | Yes | Yes | Yes | Yes | Yes | -- | Plugin | Plugin | Plugin | Yes | Yes | -- | -- | -- | -- | Yes (extension) | Plugin | -- |
+| Can Modify Args | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Plugin | Plugin | Plugin | -- | Yes | -- | -- | -- | -- | Yes (extension) | -- | -- |
+| Can Block Tools | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Plugin | Plugin | Plugin | Yes | Yes | -- | Bounded | Yes | -- | Yes (extension) | Plugin | -- |
+| Utility Commands (ctx) | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes | Yes (/ctx-stats, /ctx-doctor) | Yes | Yes |
+| Slash Commands | Yes | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
+| Plugin Marketplace | Yes | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- | -- |
 
 > **OpenCode** uses a TypeScript plugin paradigm — hooks run as in-process functions via `tool.execute.before`, `tool.execute.after`, `experimental.session.compacting`, `experimental.chat.system.transform`, and `chat.message`, providing full routing enforcement, session continuity, and user-prompt capture. The `experimental.chat.system.transform` hook acts as a SessionStart surrogate to inject the routing block and restore prior sessions. The `chat.message` hook captures user prompts and decisions (UserPromptSubmit equivalent).
 >
@@ -1398,6 +1433,8 @@ Tool call output can be collapsed/expanded with the default Pi's default keybind
 > **Pi Coding Agent** runs context-mode as an extension with full hook support. The extension registers `tool_call`, `tool_result`, `session_start`, and `session_before_compact` events, providing high session continuity coverage. The MCP server provides all 11 MCP tools.
 >
 > **OMP (Oh My Pi)** runs context-mode as a plugin via `omp plugin install context-mode`. The plugin registers `tool_call`, `tool_result`, `session_start`, and `session_before_compact` events for hard-block routing and full session continuity. Storage isolated under `~/.omp/context-mode/` so OMP and Pi never share state. Auto-detected via `PI_CODING_AGENT_DIR` (default agent dir `~/.omp/agent`) or `~/.omp/` directory. See [issue #473](https://github.com/mksglu/context-mode/issues/473) for the storage-isolation history.
+>
+> **Hermes Agent** connects via MCP only — no native hook system. All 11 `ctx_*` tools are available; routing enforcement relies on the model's instruction following (~60% compliance without hooks). Configure via `mcp_servers.json` in your Hermes profile directory.
 
 ### Routing Enforcement
 
@@ -1422,6 +1459,7 @@ Hooks intercept tool calls programmatically — they can block dangerous command
 | Zed | -- | [`AGENTS.md`](configs/zed/AGENTS.md) | -- | ~60% saved |
 | Pi | ✓ | [`AGENTS.md`](configs/pi/AGENTS.md) | **~98% saved** | ~60% saved |
 | OMP | Plugin | [`SYSTEM.md`](configs/omp/SYSTEM.md) | **~98% saved** | ~60% saved |
+| Hermes Agent | -- | -- | -- | ~60% saved |
 
 Without hooks, one unrouted `curl` or Playwright snapshot can dump 56 KB into context — wiping out an entire session's worth of savings.
 
